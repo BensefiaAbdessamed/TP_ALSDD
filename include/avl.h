@@ -16,7 +16,7 @@ typedef struct AVLnode {
 } AVLnode;
 
 // --------- abstract machine prototype ---------- //
-AVLnode* allocate_node (char* word);
+AVLnode* create_node (char* word);
 AVLnode* RC (AVLnode *P);
 AVLnode* LC (AVLnode *P);
 int Ass_RC (AVLnode *p, AVLnode *N);

@@ -4,7 +4,7 @@
 #include "avl.h"
 #include "utils.h"
 
-AVLnode* allocate_node (char *word) {
+AVLnode* create_node (char *word) {
     AVLnode* node = malloc(sizeof(AVLnode));
     //  assigning initial values to the node
     if (node != NULL){
@@ -114,7 +114,7 @@ AVLnode* rebalance (AVLnode* p) {
 // ---------- avl core operations ---------- //
 AVLnode* insert (AVLnode* root, char* word) {
     //  we reach the node 
-    if (root == NULL) {return allocate_node(word);}
+    if (root == NULL) {return create_node(word);}
  
     // if the word is less than the root; go left
     if (strcmp(word, root->word) < 0) {root->LC = insert(LC(root), word);}
