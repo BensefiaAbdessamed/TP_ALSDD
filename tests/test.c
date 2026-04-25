@@ -5,8 +5,6 @@
 
 int main(int argc, char const *argv[])
 {
-    allocate_node("hello");
-    allocate_node("world");
-    allocate_node("name");
+
     return 0;
 }
