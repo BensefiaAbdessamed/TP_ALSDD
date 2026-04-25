@@ -1,0 +1,21 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include "avl.h"
+#include "utils.h"
+#include <string.h>
+
+
+/*
+1-  reading files
+2-  removing ponctuation 
+3-  turning words into lower case
+4-  deconstructing words  
+5-  inserting words into a tree
+6-  detecting the end of a paragraph 
+*/
+char* GetParagraph (char* FilePath);
+bool EndPara (char* string);
+void removePonctuation (char* c);
+
+
