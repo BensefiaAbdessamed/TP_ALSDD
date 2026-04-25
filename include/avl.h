@@ -36,5 +36,4 @@ AVLnode* rotate_left (AVLnode *p);
 AVLnode* rotate_left_right (AVLnode *p);
 AVLnode* rotate_right_left (AVLnode *p);
 
-
 #endif // AVL_H
