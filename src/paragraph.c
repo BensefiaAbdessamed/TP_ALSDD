@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "paragraph.h"
 #include <string.h>
+#include <ctype.h>
 
 //  detects the end of the paragraph
 bool EndPara (char* string){
@@ -23,6 +24,31 @@ bool EndPara (char* string){
     return end;
 }
 
+//  detects letters
+bool is_letter (char c){
+    if ((c >= 'a' && c <= 'z') || c == ' ') return true;
+    else return false;
+}
+
+//  turn string to lowercase
+void lowerstring (char* str) {
+    for (int i = 0; str[i]; i++)
+    str[i] = tolower(str[i]);
+}
+
+//  delete ponctuation
+void delete_ponct (char* str) {
+    if (str == NULL) return;
+
+    int i = 0, j = 0;
+    while (str[i]) {
+        if (is_letter(str[i]))
+            str[j++] = str[i];
+        i++;
+    } 
+    str[j] = '\0';
+}
+
 //  deconstructs a paragraph from the  file
 char* GetParagraph (char* FilePath) {
     //  opening the file on read
@@ -36,9 +62,12 @@ char* GetParagraph (char* FilePath) {
     {   
         para = realloc(para, strlen(line) + strlen(para) + 2);  //  allocating more space for paragraph
         para = concat(para, line);      //  concatinating lines into one sigle paragraph
+        lowerstring(para);              //  turn characters to lower case
+        delete_ponct(para);             //  remove non-characters
         if (EndPara(line)) break;       //  check if we reach the end of the paragraph
     }
 
     //  return the paragraph
     return para;
 }
+

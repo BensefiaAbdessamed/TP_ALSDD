@@ -5,7 +5,6 @@
 #include "utils.h"
 #include <string.h>
 
-
 /*
 1-  reading files
 2-  removing ponctuation 
@@ -17,5 +16,7 @@
 char* GetParagraph (char* FilePath);
 bool EndPara (char* string);
 void removePonctuation (char* c);
-
+bool is_letter (char c);
+void lowerstring (char* str);
+void delete_ponct (char* str);
 
