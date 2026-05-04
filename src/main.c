@@ -8,7 +8,6 @@
 
 int main()
 {   
-    char * paragraph = GetParagraph("test.txt");
-    printf("%s", paragraph);
+
     return 0;
 }

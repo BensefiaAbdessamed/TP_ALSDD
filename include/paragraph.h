@@ -14,8 +14,9 @@
 6-  detecting the end of a paragraph 
 */
 char* GetParagraph (char* FilePath);
+AVLnode* GetPhrases (char* paragraph);
 bool EndPara (char* string);
-void removePonctuation (char* c);
+void delete_ponct (char* c);
 bool is_letter (char c);
 void lowerstring (char* str);
 void delete_ponct (char* str);

@@ -26,7 +26,7 @@ bool EndPara (char* string){
 
 //  detects letters
 bool is_letter (char c){
-    if ((c >= 'a' && c <= 'z') || c == ' ') return true;
+    if ((c >= 'a' && c <= 'z') || c == ' ' || c == '.') return true;
     else return false;
 }
 
@@ -64,10 +64,45 @@ char* GetParagraph (char* FilePath) {
         para = concat(para, line);      //  concatinating lines into one sigle paragraph
         lowerstring(para);              //  turn characters to lower case
         delete_ponct(para);             //  remove non-characters
-        if (EndPara(line)) break;       //  check if we reach the end of the paragraph
+        if (EndPara(line)) {
+            
+
+        }; 
     }
 
     //  return the paragraph
     return para;
+}
+
+AVLnode* GetPhrases (char* paragraph) {
+    if (paragraph == NULL) return NULL;
+
+    AVLnode* paragraph1 = NULL;
+    size_t len = strlen(paragraph);
+    size_t start = 0;
+
+    for (size_t i = 0; i <= len; i++) {
+        if (paragraph[i] == '.' || paragraph[i] == '\0') {
+            size_t end = i;
+
+            while (start < end && isspace((unsigned char)paragraph[start])) start++;
+            while (end > start && isspace((unsigned char)paragraph[end - 1])) end--;
+
+            if (end > start) {
+                size_t sentence_len = end - start;
+                char* sentence = malloc(sentence_len + 1);
+                if (sentence != NULL) {
+                    memcpy(sentence, paragraph + start, sentence_len);
+                    sentence[sentence_len] = '\0';
+                    paragraph1 = insert(paragraph1, sentence);
+                    free(sentence);
+                }
+            }
+
+            start = i + 1;
+        }
+    }
+
+    return paragraph1;
 }
 
