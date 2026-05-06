@@ -32,7 +32,7 @@ void display(AVLnode *root) {
 }
 
 //      string helpers 
-char *concat(char *s1, const char *s2) {
+char *concat(char *s1, char *s2) {
     strcat(s1, " ");
     strcat(s1, s2);
     return s1;

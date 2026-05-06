@@ -13,7 +13,7 @@
 5-  inserting words into a tree
 6-  detecting the end of a paragraph 
 */
-char* GetParagraph (char* FilePath);
+AVLnode** GetParagraph (char* FilePath, int* num_paragraphs);
 AVLnode* GetPhrases (char* paragraph);
 bool EndPara (char* string);
 void delete_ponct (char* c);

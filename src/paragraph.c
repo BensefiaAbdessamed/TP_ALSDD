@@ -49,29 +49,121 @@ void delete_ponct (char* str) {
     str[j] = '\0';
 }
 
-//  deconstructs a paragraph from the  file
-char* GetParagraph (char* FilePath) {
-    //  opening the file on read
+//  deconstructs paragraphs from the file and returns an array of AVL tree roots
+AVLnode** GetParagraph (char* FilePath, int* num_paragraphs) {
+    // opening the file on read
     FILE* fptr = fopen(FilePath, "r");
-
-    //  reading line by line
-    char line[256];
-    char* para = malloc(sizeof(line));
-
-    while (fgets(line, sizeof(line), fptr)) 
-    {   
-        para = realloc(para, strlen(line) + strlen(para) + 2);  //  allocating more space for paragraph
-        para = concat(para, line);      //  concatinating lines into one sigle paragraph
-        lowerstring(para);              //  turn characters to lower case
-        delete_ponct(para);             //  remove non-characters
-        if (EndPara(line)) {
-            
-
-        }; 
+    if (fptr == NULL) {
+        perror("Error opening file");
+        *num_paragraphs = 0;
+        return NULL;
     }
 
-    //  return the paragraph
-    return para;
+    // reading line by line
+    char line[256];
+    char* para = malloc(1); // Start with an empty string
+    if (para == NULL) {
+        fclose(fptr);
+        *num_paragraphs = 0;
+        return NULL;
+    }
+    para[0] = '\0';
+
+    int paragraphs_capacity = 10; // Initial capacity for the array of roots
+    AVLnode** paragraph_roots = malloc(paragraphs_capacity * sizeof(AVLnode*));     // allocating the size of the array of pointers
+    if (paragraph_roots == NULL) {
+        free(para);
+        fclose(fptr);
+        *num_paragraphs = 0;
+        return NULL;
+    }
+    *num_paragraphs = 0;
+    while (fgets(line, sizeof(line), fptr)) 
+    {   
+        if (strlen(line) == 1)
+        {
+            continue;
+        }
+        
+        // allocating more space for paragraph
+        char* new_para = realloc(para, strlen(para) + strlen(line) +2);
+        if (new_para == NULL) {
+            // Handle realloc failure
+            free(paragraph_roots);
+            free(para);
+            fclose(fptr);
+            *num_paragraphs = 0;
+            return NULL;
+        }
+        para = new_para;
+        para = concat(para, line);      // concatinating lines into one single paragraph
+
+        if (EndPara(line)) {
+            // A paragraph has ended, process it
+            lowerstring(para);              // turn characters to lower case
+            delete_ponct(para);             // remove non-characters
+            
+            // Construct the AVL tree for the paragraph
+            AVLnode* paragraph_root = GetPhrases(para);
+
+            // Resize array of roots if necessary
+            if (*num_paragraphs >= paragraphs_capacity) {
+                paragraphs_capacity *= 2;
+                AVLnode** new_roots = realloc(paragraph_roots, paragraphs_capacity * sizeof(AVLnode*));     //  just renaming the array of roots
+                if (new_roots == NULL) {
+                    // Handle realloc failure
+                    free(paragraph_roots);
+                    free(para);
+                    fclose(fptr);
+                    *num_paragraphs = 0;
+                    return NULL;
+                }
+                paragraph_roots = new_roots;        //  the array now has new allocated size
+            }
+
+            
+            // Save the root pointer into the array
+            paragraph_roots[*num_paragraphs] = paragraph_root;
+            (*num_paragraphs)++;
+
+            // Reset para for the next paragraph
+            para[0] = '\0';
+        }
+
+    }
+
+    // Process the last paragraph if the file doesn't end with a paragraph marker
+    if (strlen(para) > 0) {
+        lowerstring(para);
+        delete_ponct(para);
+
+        AVLnode* paragraph_root = GetPhrases(para);
+        if (*num_paragraphs >= paragraphs_capacity) {
+            paragraphs_capacity++;
+            AVLnode** new_roots = realloc(paragraph_roots, paragraphs_capacity * sizeof(AVLnode*));
+            if (new_roots == NULL) {
+                // Handle realloc failure
+                 for (int i = 0; i < *num_paragraphs; i++) {
+                    // free avl tree
+                }
+                free(paragraph_roots);
+                free(para);
+                fclose(fptr);
+                *num_paragraphs = 0;
+                return NULL;
+            }
+            paragraph_roots = new_roots;
+        }
+        paragraph_roots[*num_paragraphs] = paragraph_root;
+        (*num_paragraphs)++;
+
+    }
+
+    free(para);
+    fclose(fptr);
+
+    // return the array of roots
+    return paragraph_roots;
 }
 
 AVLnode* GetPhrases (char* paragraph) {
