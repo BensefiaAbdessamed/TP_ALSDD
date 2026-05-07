@@ -33,7 +33,9 @@ void display(AVLnode *root) {
 
 //      string helpers 
 char *concat(char *s1, char *s2) {
-    strcat(s1, " ");
-    strcat(s1, s2);
-    return s1;
+    size_t new_len = ((s1) ? strlen(s1) : 0) + strlen(s2) +2;
+    char* result = realloc(s1, new_len);
+    strcat(result, " ");
+    strcat(result, s2);
+    return result;
 }

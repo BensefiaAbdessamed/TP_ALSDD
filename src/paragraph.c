@@ -50,7 +50,8 @@ void delete_ponct (char* str) {
 }
 
 //  deconstructs paragraphs from the file and returns an array of AVL tree roots
-AVLnode** GetParagraph (char* FilePath, int* num_paragraphs) {
+//  must be initialized with number of paragraphss = 0 before function call
+AVLnode** GetParagraphs (char* FilePath, int* num_paragraphs) {
     // opening the file on read
     FILE* fptr = fopen(FilePath, "r");
     if (fptr == NULL) {
@@ -61,7 +62,7 @@ AVLnode** GetParagraph (char* FilePath, int* num_paragraphs) {
 
     // reading line by line
     char line[256];
-    char* para = malloc(1); // Start with an empty string
+    char* para = malloc(1); // Start with an empty string 
     if (para == NULL) {
         fclose(fptr);
         *num_paragraphs = 0;
@@ -158,7 +159,10 @@ AVLnode** GetParagraph (char* FilePath, int* num_paragraphs) {
         (*num_paragraphs)++;
 
     }
-
+    // ensure space for the NULL terminator
+    AVLnode** final = realloc(paragraph_roots, (*num_paragraphs + 1) * sizeof(AVLnode*));
+    paragraph_roots = final;
+    paragraph_roots[*num_paragraphs] = NULL;
     free(para);
     fclose(fptr);
 
@@ -166,6 +170,7 @@ AVLnode** GetParagraph (char* FilePath, int* num_paragraphs) {
     return paragraph_roots;
 }
 
+//  deconstructs phrases from a paragraph
 AVLnode* GetPhrases (char* paragraph) {
     if (paragraph == NULL) return NULL;
 
@@ -198,3 +203,14 @@ AVLnode* GetPhrases (char* paragraph) {
     return paragraph1;
 }
 
+//  constructs the paragraph fron the avl tree that contains sentences 
+void getFullParagraph (AVLnode* root, char** para) {
+    if (root != NULL){
+        //  travrse the tree of sentences
+        getFullParagraph(root->LC, para);
+        getFullParagraph(root->RC, para);
+
+        //  concatenate sentences into the paragraph
+        *para = concat(*para, root->word);
+    }
+}
