@@ -9,19 +9,16 @@
 
 //  detects the end of the paragraph
 bool EndPara (char* string){
-    
-    int i = 0;
-    bool end = false; 
+    if (string == NULL) return false;
+    size_t len = strlen(string);
+    if (len < 2) return false;
 
-    //   traversing the whole string
-    while (string[i+2] != '\0') i++;
-    
-    //  checking the last letter
-    if ((string[i] == '.' && string[i+1] == '\n' ) ||
-    (string[i-1] == '.' && string[i] == ' ' && string[i+1] == '\n')) end = true;
-
-    //  return the state of the paragraph
-    return end;
+    // A simple heuristic: if it ends with .\n or . \n
+    if (string[len-1] == '\n') {
+        if (string[len-2] == '.') return true;
+        if (len >= 3 && string[len-2] == ' ' && string[len-3] == '.') return true;
+    }
+    return false;
 }
 
 //  detects letters
@@ -214,3 +211,5 @@ void getFullParagraph (AVLnode* root, char** para) {
         *para = concat(*para, root->word);
     }
 }
+
+

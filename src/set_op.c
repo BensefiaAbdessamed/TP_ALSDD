@@ -1,190 +1,122 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include "avl.h"
 #include "paragraph.h"
 
+// Helper to traverse a tree and perform an action
+static void traverse_and_intersect(AVLnode* t1, AVLnode* t2, AVLnode** res) {
+    //  if we reach a null
+    if (t1 == NULL) return;
 
-void INTERSECTION_SENT (AVLnode* tree1, AVLnode* tree2, AVLnode** intersection){
+    //  traversing the tree i.e traversing each sentence in the paragraph   1
+    traverse_and_intersect(t1->LC, t2, res);
+    traverse_and_intersect(t1->RC, t2, res);
     
-    if (tree1 != NULL) {
+    //  search for the word if it exists in the paragraph 2
+    if (search(t2, t1->word)) {
+        *res = insert(*res, t1->word);      //  if yes insert it into the result AVL tree
+    }
+}
+static void traverse_and_insert(AVLnode* src, AVLnode** dest) {
+    //  skip if the we reach a null
+    if (src == NULL) return;
 
-        //  TRAVERSING THE TREE NODE BY NODE
-        INTERSECTION_SENT(tree1->LC, tree2, intersection);
-        INTERSECTION_SENT(tree1->RC, tree2, intersection);
+    //  insert the sentence we reached 
+    *dest = insert(*dest, src->word);
 
-        //  FIND SIMILAR SENTENCES
-        char* sentence1 = tree1->word;
-        AVLnode* phrase = search(tree2, sentence1); //  RETURNS A POINTER TO THE FOUND NODE
-        
-        
-        if (phrase == NULL) {return;}
-        else {*intersection = insert(*intersection, sentence1); }
+    //  then traverse all the tree
+    traverse_and_insert(src->LC, dest);
+    traverse_and_insert(src->RC, dest);
+}
+static void traverse_and_diff(AVLnode* t1, AVLnode* t2, AVLnode** res) {
+    //  if we reach a null 
+    if (t1 == NULL) return;
+
+    //  traverse the tree 1
+    traverse_and_diff(t1->LC, t2, res);
+    traverse_and_diff(t1->RC, t2, res);
+    
+    //  the word doesn't exist in the 2nd paragraph 
+    if (!search(t2, t1->word)) {
+        *res = insert(*res, t1->word);      //  insert once it's not found
     }
 }
 
+void INTERSECTION_SENT (AVLnode* tree1, AVLnode* tree2, AVLnode** intersection) {
+    traverse_and_intersect(tree1, tree2, intersection);
+}
 void UNION_SENT (AVLnode* tree1, AVLnode* tree2, AVLnode** Union) {
-    //  inserting the 1st tree
-    if (tree1 != NULL) {
-        *Union = insert(*Union, tree1->word);
-        UNION_SENT (tree1->LC, tree2, Union);
-        UNION_SENT (tree1->RC, tree2, Union);
-    }
-    
-    //  inserting the 2nd tree
-    if (tree2 != NULL) {
-        *Union = insert(*Union, tree2->word);
-        UNION_SENT(tree1, tree2->LC, Union);
-        UNION_SENT (tree1, tree2->RC, Union);
-    }   
+    //  insert the tree 1 and tree 2
+    traverse_and_insert(tree1, Union);
+    traverse_and_insert(tree2, Union);
 }
-
 void DIFFERENCE_SENT (AVLnode* tree1, AVLnode* tree2, AVLnode** differnece) {
-    
-    if (tree1 != NULL) {
-        //  TRAVERSE THE TREE 
-        DIFFERENCE_SENT(tree1->LC, tree2, differnece);
-        DIFFERENCE_SENT(tree1->RC, tree2, differnece);
-
-        char* sentence = tree1->word;
-        AVLnode* phrase = search(tree2, sentence); //  RETURNS A POINTER TO THE FOUND NODE
-
-        if (phrase == NULL) {*differnece = insert(*differnece, sentence);}
-        else return;
-
-
-    }
+    //  calls the static trav and diff funcion
+    traverse_and_diff(tree1, tree2, differnece);
 }
 
-void INTERSECTION_PARA (AVLnode** FILE1, AVLnode** FILE2, AVLnode** INTER_PARA){
+//   helper to compare two AVL trees (paragraphs)
+static bool are_paras_equal(AVLnode* p1, AVLnode* p2) {
+    char *s1 = calloc(1, 1);
+    char *s2 = calloc(1, 1);
 
-    int i = 0;
-    int index = 0;
-
-    AVLnode* para_f1;
-    AVLnode* para_f2;
-
-    //  extract paragraphs from file1 and compare with file2
-    while (FILE1[i] != NULL) {
-        //  construct a string of sentences of paragraph 1
-        char* full_para_f1 = calloc(1, 1);
-        para_f1 = FILE1[i];
-        getFullParagraph(para_f1, &full_para_f1);        //  paragaph 1
-
-        int j = 0;
-        while (FILE2[j] != NULL) {
-            //  construct a string of sentences of paragraph 2
-            char* full_para_f2 = calloc(1, 1);        //  @remark MUST BE EXPLAINED LATER
-            para_f2 = FILE2[j];
-            getFullParagraph(para_f2, &full_para_f2);        //  paragraph 2
-            
-            //  check if paragraphs are equal
-            if (strcmp(full_para_f1, full_para_f2) == 0) {
-                INTER_PARA[index++] = FILE2[j];      //   if both are equal add the paragraph to inter para
-            }
-            free(full_para_f2);
-            
-            j++;     
-        }
-        
-        free(full_para_f1);
-        i++; 
-    }   
-
-    INTER_PARA[index] = NULL;
+    //  extracting paragraphs from the trees
+    getFullParagraph(p1, &s1);          //      paragraph 1
+    getFullParagraph(p2, &s2);          //      paragraph 2
+    
+    bool equal = (strcmp(s1, s2) == 0);
+    free(s1); free(s2);
+    return equal;
 }
 
-void UNION_PARA (AVLnode** FILE1, AVLnode** FILE2, AVLnode** UN_PARA){
-    
-    int i = 0;
+void INTERSECTION_PARA (AVLnode** FILE1, AVLnode** FILE2, AVLnode** INTER_PARA) {
     int index = 0;
-    char* paragraph2 = calloc(1,1);
-    char* paragraph1 = calloc(1,1);
-
-    //      addingg paragraphs from the file1
-    while (FILE1[i] != NULL) {
-        UN_PARA[index++] = FILE1[i++];
-    }
-
-    i = 0;
-    while (FILE2[i] != NULL) {
-
-        paragraph2 = calloc(1, 1);      //  fresh allocation for para2
-        //  check if the paragraph already added in the arary
-        bool exists = false;
-        getFullParagraph(FILE2[i], &paragraph2);    //  got the parahraph
-
-        for (int z = 0; z < index; z++)
-        {
-            paragraph1 = calloc(1, 1);      //  fresh allocation of the paragraph
-            getFullParagraph(UN_PARA[z], &paragraph1);
-            
-            if (strcmp(paragraph1, paragraph2) == 0) {free(paragraph1); exists = true; break;}
-            free(paragraph1);       //      free the paragraph 2
-            
-        }
-
-        free(paragraph2);   //  free the paragraph 1
-        
-        //      if the paragraph isn't added before
-        if (exists == false) {UN_PARA[index++] = FILE2[i];}
-        i++;
-
-    }
-    
-    UN_PARA[index] = NULL;      //   add the null to the end of the array
-    
-}
-
-void DIFFERENCE_PARA (AVLnode** FILE1, AVLnode** FILE2, AVLnode** DIFF_PARA) {
-    
-    int i = 0;
-    int j = 0;
-    int index = 0;
-    
-    while (FILE1[i] != NULL)
-    {
-        bool exists = false;
-        char *para1 = calloc(1, 1);
-        getFullParagraph(FILE1[i], &para1);
-
-        printf("%s \n", para1);
-        printf("\n");
-        printf("\n");
-        
-        j = 0;
-        while (FILE2[j] != NULL)
-        {
-            char* para2 = calloc(1, 1);
-            getFullParagraph(FILE2[j], &para2);
-            printf("%s \n", para2);
-            printf("\n");
-            printf("\n");
-            
-            if (strcmp(para1, para2) == 0) {
-
-                exists = true;
-                free(para2);
+    for (int i = 0; FILE1[i]; i++) {                    //  traverse each paragraph in file1
+        for (int j = 0; FILE2[j]; j++) {                //  traverse each pragraph in file2
+            if (are_paras_equal(FILE1[i], FILE2[j])) {  //  check if equal
+                INTER_PARA[index++] = FILE1[i];         //  insert into inter para if equal
                 break;
             }
-
-            j++;
-            free(para2);
         }
-
-        //  if the paragraph is not in the 2nd file
-
-        if (exists == false) {
-            DIFF_PARA[index++] = FILE1[i];
-            printf("added to the diff list... \n");
-        }
-
-        i++;
-        free(para1); 
     }
-
-    DIFF_PARA[index] = NULL;
-    
+    INTER_PARA[index] = NULL;       //  add null to indicate the end of the file 
 }
+void UNION_PARA (AVLnode** FILE1, AVLnode** FILE2, AVLnode** UN_PARA) {
+    int index = 0;
+    for (int i = 0; FILE1[i]; i++) UN_PARA[index++] = FILE1[i];     //  insert paragraphs of file 1 all
+    
+    for (int i = 0; FILE2[i]; i++) {
+        bool exists = false;
+        
+        //  check if the paragraph already added
+        for (int j = 0; j < index; j++) {
+            if (are_paras_equal(FILE2[i], UN_PARA[j])) {
+                exists = true;
+                break;
+            }
+        }
+        
+        //  add if the para doesn't exists
+        if (!exists) UN_PARA[index++] = FILE2[i];
+    }
+    UN_PARA[index] = NULL;      //  add null at the end of file
+}
+void DIFFERENCE_PARA (AVLnode** FILE1, AVLnode** FILE2, AVLnode** DIFF_PARA) {
+    int index = 0;
+    for (int i = 0; FILE1[i]; i++) {
+        bool exists = false;
+        for (int j = 0; FILE2[j]; j++) {
+            if (are_paras_equal(FILE1[i], FILE2[j])) {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists) DIFF_PARA[index++] = FILE1[i];     //  insert if the paragraph hasn't been repeated in file 2
+    }
+    DIFF_PARA[index] = NULL;
+}
+
 
 

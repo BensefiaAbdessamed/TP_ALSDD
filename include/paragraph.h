@@ -1,3 +1,6 @@
+#ifndef PARAGRAPH_H
+#define PARAGRAPH_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -21,3 +24,6 @@ bool is_letter (char c);
 void lowerstring (char* str);
 void delete_ponct (char* str);
 void getFullParagraph (AVLnode* root, char** para);
+
+
+#endif
