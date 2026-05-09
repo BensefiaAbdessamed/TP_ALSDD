@@ -83,7 +83,7 @@ AVLnode *rotate_left_right(AVLnode *p) {
 
 //  ------ avl management ----- //
 void UpdateHeight_Bf (AVLnode *p) {
-    if (p == NULL) p->height = -1;
+    if (p == NULL) return;
     
     int left_height = height(LC(p));
     int right_height = height(RC(p));

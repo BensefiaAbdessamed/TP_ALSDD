@@ -1,0 +1,5 @@
+This is the first paragraph of the first file. It contains simple sentences. The goal is to test the parsing.
+
+The second paragraph is different. It shares some words with the other file. Set operations should find the intersection.
+
+Finally, a third paragraph exists here. It is unique to this file. Difference operations will highlight this content.
